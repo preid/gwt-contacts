@@ -24,7 +24,6 @@ public class ContactsXmlDS extends DataSource
         setTitleField("Name");
         setRecordXPath("/List/employee");
         DataSourceTextField nameField = new DataSourceTextField("Name", "Name", 128);
-
         DataSourceIntegerField employeeIdField = new DataSourceIntegerField("EmployeeId", "Employee ID");
         employeeIdField.setPrimaryKey(true);
         employeeIdField.setRequired(true);
