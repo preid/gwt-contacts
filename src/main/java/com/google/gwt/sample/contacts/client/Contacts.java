@@ -2,8 +2,15 @@ package com.google.gwt.sample.contacts.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.smartgwt.client.types.DragDataAction;
+import com.smartgwt.client.types.GroupStartOpen;
 import com.smartgwt.client.types.TreeModelType;
 import com.smartgwt.client.widgets.Canvas;
+import com.smartgwt.client.widgets.IButton;
+import com.smartgwt.client.widgets.Label;
+import com.smartgwt.client.widgets.events.ClickEvent;
+import com.smartgwt.client.widgets.events.ClickHandler;
+import com.smartgwt.client.widgets.form.DynamicForm;
+import com.smartgwt.client.widgets.form.fields.DateItem;
 import com.smartgwt.client.widgets.grid.CellFormatter;
 import com.smartgwt.client.widgets.grid.ListGrid;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
@@ -11,6 +18,7 @@ import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.SectionStack;
 import com.smartgwt.client.widgets.layout.SectionStackSection;
 import com.smartgwt.client.widgets.layout.VLayout;
+import com.smartgwt.client.widgets.toolbar.ToolStrip;
 import com.smartgwt.client.widgets.tree.Tree;
 import com.smartgwt.client.widgets.tree.TreeGrid;
 import com.smartgwt.client.widgets.tree.TreeGridField;
@@ -31,26 +39,22 @@ public class Contacts
       //AppController appViewer = new AppController(rpcService, eventBus);
       //appViewer.go( RootLayoutPanel.get());
 
-      final TreeGrid treeGrid = setupMainGrid();
-
-      //treeGrid.draw();
+      final ListGrid treeGrid = setupMainGrid();
 
       HLayout mainLayout = new HLayout();
       mainLayout.setWidth100();
       mainLayout.setHeight100();
 
-      treeGrid.setShowResizeBar( true );
-      mainLayout.addMember( treeGrid );
+      VLayout leftVLayout = new VLayout();
+      leftVLayout.setShowResizeBar( true );
 
-      VLayout vLayout = new VLayout();
-      vLayout.setWidth( 300 );
+      final ToolStrip toolStrip = setupMainToolStrip();
 
-      /*final ToolStrip toolStrip = new ToolStrip();
-      toolStrip.setLayoutLeftMargin( 10 );
-      final Label label = new Label( "Structure" );
-      toolStrip.addMember( label );
-      toolStrip.setWidth100();
-      vLayout.addMember( toolStrip );*/
+      leftVLayout.addMember( toolStrip );
+      leftVLayout.addMember( treeGrid );
+      mainLayout.addMember( leftVLayout );
+      VLayout rightVLayout = new VLayout();
+      rightVLayout.setWidth( 300 );
 
       SectionStack structureSectionStack = new SectionStack();
       structureSectionStack.setWidth100();
@@ -86,30 +90,72 @@ public class Contacts
 
       structureSection.addItem( structureTree );
       structureSectionStack.addSection( structureSection );
-      vLayout.addMember( structureSectionStack );
+      rightVLayout.addMember( structureSectionStack );
 
       sectionStack.addSection( resourcesSection );
       sectionStack.addSection( crewSection );
       sectionStack.addSection( taskSection );
-      vLayout.addMember( sectionStack );
+      rightVLayout.addMember( sectionStack );
 
-      mainLayout.addMember( vLayout );
+      mainLayout.addMember( rightVLayout );
       mainLayout.draw();
    }
 
-   private TreeGrid setupMainGrid()
+   private ToolStrip setupMainToolStrip()
    {
-      final TreeGrid treeGrid = new TreeGrid();
-      treeGrid.setLoadDataOnDemand( false );
+      final ToolStrip toolStrip = new ToolStrip();
+      toolStrip.setLayoutLeftMargin( 10 );
+      toolStrip.setLayoutRightMargin( 10 );
+      final Label label1 = new Label( "Location: <span class='emphasis'>Lane Cove<span>" );
+      label1.setWrap( false );
+      toolStrip.addMember( label1 );
+      toolStrip.addSeparator();
+      final Label label2 = new Label( "Event: <span class='emphasis'> Riverside Drive VES - IX-1301-X10901<span>" );
+      label2.setWrap( false );
+      toolStrip.addMember( label2 );
+      toolStrip.addFill();
+      toolStrip.addMember( new Label( "<span class='emphasis'>Forward Planning</span>" ) );
+      DynamicForm dateForm = new DynamicForm();
+      dateForm.setNumCols( 4 );
+      final DateItem fromDate = new DateItem( "fromDate", "from" );
+      fromDate.setUseTextField( true );
+      final DateItem toDate = new DateItem( "toDate", "to" );
+      toDate.setUseTextField( true );
+      toolStrip.addMember( dateForm );
+      toolStrip.setWidth100();
+      IButton loadButton = new IButton();
+      loadButton.setTitle( "load" );
+      loadButton.setIcon( "refresh16.png" );
+      loadButton.setWidth( 60 );
+      loadButton.addClickHandler( new ClickHandler()
+      {
+         public void onClick( ClickEvent event )
+         {
+         }
+      } );
+
+      dateForm.setItems( fromDate, toDate );
+      toolStrip.addSpacer( 8 );
+      toolStrip.addMember( loadButton );
+
+      return toolStrip;
+   }
+
+   private ListGrid setupMainGrid()
+   {
+      //final TreeGrid treeGrid = new TreeGrid();
+      final ListGrid treeGrid = new ListGrid();
+      //treeGrid.setLoadDataOnDemand( false );
       treeGrid.setWidth100();
       treeGrid.setHeight100();
       treeGrid.setDataSource( ContactsXmlDS.getInstance() );
       treeGrid.setCanEdit( true );
-      treeGrid.setNodeIcon( "person.png" );
-      treeGrid.setFolderIcon( "person.png" );
+      //treeGrid.setNodeIcon( "person.png" );
+      //treeGrid.setFolderIcon( "person.png" );
       treeGrid.setAutoFetchData( true );
       treeGrid.setCanFreezeFields( true );
-      treeGrid.setCanReparentNodes( true );
+      //treeGrid.setCanReparentNodes( true );
+
 
       TreeGridField nameField = new TreeGridField( "Name", 150 );
       nameField.setFrozen( true );
@@ -120,9 +166,16 @@ public class Contacts
       TreeGridField salaryField = new TreeGridField( "Salary" );
       TreeGridField genderField = new TreeGridField( "Gender" );
       TreeGridField maritalStatusField = new TreeGridField( "MaritalStatus" );
+      TreeGridField reportsToField = new TreeGridField( "ReportsTo" );
+      reportsToField.setHidden( true );
 
-      treeGrid.setFields( nameField, jobField, employeeTypeField, employeeStatusField, salaryField, genderField,
+
+      treeGrid.setFields( reportsToField, nameField, jobField, employeeTypeField, employeeStatusField, salaryField, genderField,
                           maritalStatusField );
+
+      treeGrid.setGroupByField( "ReportsTo" );
+      treeGrid.setGroupStartOpen( GroupStartOpen.ALL );
+
       return treeGrid;
    }
 
@@ -134,12 +187,12 @@ public class Contacts
       grid1Tree.setRoot( new TreeNode( "Root" ) );
 
       final TreeGrid structureTree = new TreeGrid();
-      //structureTree.setLoadDataOnDemand( false );
+      structureTree.setLoadDataOnDemand( false );
       structureTree.setWidth100();
       structureTree.setHeight100();
-      //structureTree.setDataSource( ContactsXmlDS.getInstance() );
-      //structureTree.setAutoFetchData( true );
-      structureTree.setData( grid1Tree );
+      structureTree.setDataSource( new ContactsXmlDS( "abc" ) );
+      structureTree.setAutoFetchData( true );
+      //structureTree.setData( grid1Tree );
       structureTree.setShowConnectors( true );
       structureTree.setClosedIconSuffix( "" );
       structureTree.setBorder( "none" );
@@ -216,7 +269,6 @@ public class Contacts
       crewTree.setShowHeader( false );
       crewTree.setCanDragRecordsOut( true );
       crewTree.setDragDataAction( DragDataAction.COPY );
-      crewTree.setCanEdit( true );
 
       final TreeGridField treeGridField = new TreeGridField( "Name" );
       crewTree.setFields( treeGridField );
